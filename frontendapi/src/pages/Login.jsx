@@ -26,8 +26,7 @@ export default function Login({ setToken }) {
       localStorage.setItem("refresh", res.data.refresh);
       setToken(res.data.access);
 
-      alert("Login successful!");
-      navigate("/todos"); // go to todos page
+      navigate("/todos");
     } catch (err) {
       if (err.response?.status === 401) {
         alert("Invalid username or password.");
@@ -40,22 +39,43 @@ export default function Login({ setToken }) {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit" disabled={loading}>
-        {loading ? "Logging in..." : "Login"}
-      </button>
-    </form>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
+      <div className="w-full max-w-md bg-gray-800 rounded-2xl shadow-2xl p-8">
+        <h1 className="text-3xl font-bold text-center mb-6">🔑 Login</h1>
+        <form onSubmit={handleLogin} className="space-y-5">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold text-lg transition transform hover:scale-[1.02] disabled:opacity-60"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+        <p className="text-center mt-6 text-sm text-gray-400">
+          Don’t have an account?{" "}
+          <a
+            href="/register"
+            className="text-indigo-400 hover:underline"
+          >
+            Sign up
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }
+
