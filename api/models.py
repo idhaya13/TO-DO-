@@ -7,8 +7,18 @@ class Todo(models.Model):
     description = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True) 
 
     def __str__(self):
         return self.title
 
 
+    def soft_delete(self):
+        self.is_deleted = True
+        self.save()
+
+    # Restore method
+    def restore(self):
+        self.is_deleted = False
+        self.save()
