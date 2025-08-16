@@ -5,20 +5,14 @@ import { useNavigate } from "react-router-dom";
 export default function Todos() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTodo, setSelectedTodo] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem("access");
 
   const fetchTodos = async () => {
-    const token = localStorage.getItem("access");
-    if (!token) {
-      alert("Please log in first.");
-      navigate("/login");
-      return;
-    }
     try {
       const res = await axios.get("http://127.0.0.1:8000/api/todos/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTodos(res.data);
     } catch (err) {
@@ -33,7 +27,44 @@ export default function Todos() {
     }
   };
 
+  const handleCompleteToggle = async (todo) => {
+    try {
+      await axios.patch(
+        `http://127.0.0.1:8000/api/todos/${todo.id}/`,
+        { completed: !todo.completed },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setSelectedTodo(null);
+      fetchTodos();
+    } catch (err) {
+      console.error("Error updating todo:", err);
+    }
+  };
+
+  const handleDelete = async (todo) => {
+    if (!window.confirm("Are you sure you want to delete this task permanently?")) return;
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/todos/${todo.id}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSelectedTodo(null);
+      fetchTodos();
+    } catch (err) {
+      console.error("Error deleting todo:", err);
+    }
+  };
+
   useEffect(() => {
+    if (!token) {
+      alert("Please log in first.");
+      navigate("/login");
+      return;
+    }
     fetchTodos();
   }, []);
 
@@ -46,7 +77,7 @@ export default function Todos() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
-        <p className="text-lg animate-pulse">Loading todos...</p>
+        <p className="text-lg animate-pulse">Loading...</p>
       </div>
     );
   }
@@ -58,8 +89,8 @@ export default function Todos() {
         <h1 className="text-2xl font-bold">📋 My Dashboard</h1>
         <div className="flex gap-3">
           <button
-            onClick={() => alert("Open create todo modal")}
-            className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-semibold"
+            onClick={() => navigate("/create-todo")}
+            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold"
           >
             + Add Todo
           </button>
@@ -72,15 +103,18 @@ export default function Todos() {
         </div>
       </nav>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="p-6">
-        <h2 className="text-3xl font-semibold mb-6">Your Tasks</h2>
+        <h2 className="text-3xl font-semibold mb-6">✅ Your Tasks</h2>
+
+        {/* Todos List */}
         {todos.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {todos.map((todo) => (
               <div
                 key={todo.id}
-                className={`p-4 rounded-xl shadow-lg transition transform hover:scale-105 ${
+                onClick={() => setSelectedTodo(todo)}
+                className={`p-4 rounded-xl shadow-lg hover:scale-105 cursor-pointer ${
                   todo.completed ? "bg-green-600" : "bg-gray-700"
                 }`}
               >
@@ -92,11 +126,47 @@ export default function Todos() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-400">No todos found. Create one above!</p>
+          <p className="text-gray-400">No todos found.</p>
         )}
       </div>
+
+      {/* Modal for selected todo */}
+      {selectedTodo && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-2xl font-bold mb-4">{selectedTodo.title}</h3>
+            <p className="mb-4 text-gray-300">
+              {selectedTodo.description || "No description provided."}
+            </p>
+            <p className="mb-4">
+              Status:{" "}
+              {selectedTodo.completed ? "✅ Completed" : "❌ Pending"}
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <button
+                onClick={() => handleCompleteToggle(selectedTodo)}
+                className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                {selectedTodo.completed
+                  ? "Mark as Pending"
+                  : "Mark as Completed"}
+              </button>
+              <button
+                onClick={() => handleDelete(selectedTodo)}
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                ❌ Delete
+              </button>
+              <button
+                onClick={() => setSelectedTodo(null)}
+                className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-
