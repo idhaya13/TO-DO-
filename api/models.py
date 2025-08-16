@@ -14,11 +14,4 @@ class Todo(models.Model):
         return self.title
 
 
-    def soft_delete(self):
-        self.is_deleted = True
-        self.save()
-
-    # Restore method
-    def restore(self):
-        self.is_deleted = False
-        self.save()
+   
