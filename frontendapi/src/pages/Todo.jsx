@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
 
 export default function Todos() {
   const [todos, setTodos] = useState([]);
@@ -68,12 +69,6 @@ export default function Todos() {
     fetchTodos();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    navigate("/login");
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">
@@ -84,30 +79,9 @@ export default function Todos() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Navbar */}
-      <nav className="bg-gray-800 shadow-md p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">📋 My Dashboard</h1>
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate("/create-todo")}
-            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold"
-          >
-            + Add Todo
-          </button>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
-
-      {/* Main content */}
+      <Navbar />
       <div className="p-6">
         <h2 className="text-3xl font-semibold mb-6">✅ Your Tasks</h2>
-
-        {/* Todos List */}
         {todos.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {todos.map((todo) => (
@@ -129,8 +103,6 @@ export default function Todos() {
           <p className="text-gray-400">No todos found.</p>
         )}
       </div>
-
-      {/* Modal for selected todo */}
       {selectedTodo && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
